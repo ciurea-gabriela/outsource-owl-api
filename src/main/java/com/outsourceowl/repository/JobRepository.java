@@ -16,6 +16,8 @@ public interface JobRepository extends PagingAndSortingRepository<Job, Long> {
 
   List<Job> findAllByCategoryId(Long categoryId, Pageable pageable);
 
+  List<Job> findAllByCategoryId(Long categoryId);
+
   List<Job> findAllBySellerId(Long sellerId);
 
   @Query(

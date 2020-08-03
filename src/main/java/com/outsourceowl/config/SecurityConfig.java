@@ -18,6 +18,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.awt.geom.GeneralPath;
+
 import static org.springframework.http.HttpMethod.*;
 
 @Configuration
@@ -93,7 +95,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .permitAll()
         .antMatchers(GET, "/jobs")
         .permitAll()
-        .antMatchers(HEAD, "/jobs")
+        .antMatchers(GET, "/jobs/*/size")
         .permitAll()
         .antMatchers(GET, "/jobs/*")
         .permitAll()

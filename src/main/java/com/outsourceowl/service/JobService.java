@@ -107,9 +107,10 @@ public class JobService {
     return modelMapper.map(job, JobDTO.class);
   }
 
-  public JobsSizeDTO getJobsSize() {
-    long size = jobRepository.count();
-    return new JobsSizeDTO(size);
+  public JobsSizeDTO getJobsSize(Long categoryId) {
+    List<Job> jobs
+            = jobRepository.findAllByCategoryId(categoryId);
+    return new JobsSizeDTO((long) jobs.size());
   }
 
   public void deleteJob(Long sellerId, Long jobId) {
