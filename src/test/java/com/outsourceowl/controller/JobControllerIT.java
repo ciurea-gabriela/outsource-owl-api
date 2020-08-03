@@ -195,7 +195,7 @@ public class JobControllerIT extends ControllerBaseIT {
             request,
             JobCreateDTO.class);
 
-    assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatusCodeValue());
+    assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCodeValue());
   }
 
   @Test
@@ -251,7 +251,7 @@ public class JobControllerIT extends ControllerBaseIT {
             request,
             JobCreateDTO.class);
 
-    assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatusCodeValue());
+    assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCodeValue());
   }
 
   @Test
