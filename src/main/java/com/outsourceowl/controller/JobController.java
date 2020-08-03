@@ -3,6 +3,7 @@ package com.outsourceowl.controller;
 import com.outsourceowl.dto.JobCreateDTO;
 import com.outsourceowl.dto.JobDTO;
 import com.outsourceowl.dto.JobUpdateDTO;
+import com.outsourceowl.dto.JobsSizeDTO;
 import com.outsourceowl.model.Job;
 import com.outsourceowl.service.JobService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -92,12 +92,9 @@ public class JobController {
     return jobService.getJob(jobId);
   }
 
-  @RequestMapping(value = "/jobs", method = RequestMethod.HEAD)
-  public ResponseEntity getJobsLength() {
-    long length = jobService.getJobsLength();
-    HttpHeaders headers = new HttpHeaders();
-    headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(length));
+  @GetMapping(value = "/jobs/size")
+  public JobsSizeDTO getJobsSize() {
+    return jobService.getJobsSize();
 
-    return new ResponseEntity(headers, HttpStatus.NO_CONTENT);
   }
 }

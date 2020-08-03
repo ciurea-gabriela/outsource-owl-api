@@ -3,6 +3,7 @@ package com.outsourceowl.service;
 import com.outsourceowl.dto.JobCreateDTO;
 import com.outsourceowl.dto.JobDTO;
 import com.outsourceowl.dto.JobUpdateDTO;
+import com.outsourceowl.dto.JobsSizeDTO;
 import com.outsourceowl.exception.ResourceNotFoundException;
 import com.outsourceowl.model.Category;
 import com.outsourceowl.model.Job;
@@ -106,8 +107,9 @@ public class JobService {
     return modelMapper.map(job, JobDTO.class);
   }
 
-  public long getJobsLength() {
-    return jobRepository.count();
+  public JobsSizeDTO getJobsSize() {
+    long size = jobRepository.count();
+    return new JobsSizeDTO(size);
   }
 
   public void deleteJob(Long sellerId, Long jobId) {
