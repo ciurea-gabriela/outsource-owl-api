@@ -92,8 +92,8 @@ public class JobController {
     return jobService.getJob(jobId);
   }
 
-  @GetMapping(value = "/jobs/{id}/size")
-  public JobsSizeDTO getJobsSize(@PathVariable("id") Long categoryId) {
+  @GetMapping(value = "/jobs/size")
+  public JobsSizeDTO getJobsSize(@RequestParam(required = false) Long categoryId) {
     return jobService.getJobsSize(categoryId);
 
   }

@@ -95,7 +95,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .permitAll()
         .antMatchers(GET, "/jobs")
         .permitAll()
-        .antMatchers(GET, "/jobs/*/size")
+        .antMatchers(GET, "/jobs/size")
         .permitAll()
         .antMatchers(GET, "/jobs/*")
         .permitAll()

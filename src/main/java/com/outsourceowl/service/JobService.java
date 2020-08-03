@@ -107,12 +107,6 @@ public class JobService {
     return modelMapper.map(job, JobDTO.class);
   }
 
-  public JobsSizeDTO getJobsSize(Long categoryId) {
-    List<Job> jobs
-            = jobRepository.findAllByCategoryId(categoryId);
-    return new JobsSizeDTO((long) jobs.size());
-  }
-
   public void deleteJob(Long sellerId, Long jobId) {
     jobRepository.findByIdAndSellerId(jobId, sellerId).ifPresent(jobRepository::delete);
   }
@@ -141,5 +135,15 @@ public class JobService {
     return jobRepository.findAll(pagination).stream()
         .map(job -> modelMapper.map(job, JobDTO.class))
         .collect(Collectors.toList());
+  }
+
+  public JobsSizeDTO getJobsSize(Long categoryId) {
+    if (categoryId != null) {
+      List<Job> jobs
+              = jobRepository.findAllByCategoryId(categoryId);
+      return new JobsSizeDTO((long) jobs.size());
+    }
+
+    return new JobsSizeDTO(jobRepository.count());
   }
 }
