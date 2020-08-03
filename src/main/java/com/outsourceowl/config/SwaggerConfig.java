@@ -27,7 +27,7 @@ public class SwaggerConfig {
   public Docket api() {
     return new Docket(DocumentationType.SWAGGER_2)
         .select()
-        .apis(RequestHandlerSelectors.basePackage("com.lifestyle.diary.controller"))
+        .apis(RequestHandlerSelectors.basePackage("com.outsourceowl.controller"))
         .paths(PathSelectors.regex("/.*"))
         .build()
         .apiInfo(apiEndPointsInfo())
@@ -36,7 +36,7 @@ public class SwaggerConfig {
   }
 
   private ApiInfo apiEndPointsInfo() {
-    return new ApiInfoBuilder().title("Diary REST Api").build();
+    return new ApiInfoBuilder().title("Outsource Owl REST Api").build();
   }
 
   private ApiKey apiKey() {
