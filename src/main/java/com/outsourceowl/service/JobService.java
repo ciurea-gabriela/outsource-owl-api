@@ -106,6 +106,10 @@ public class JobService {
     return modelMapper.map(job, JobDTO.class);
   }
 
+  public long getJobsLength() {
+    return jobRepository.count();
+  }
+
   public void deleteJob(Long sellerId, Long jobId) {
     jobRepository.findByIdAndSellerId(jobId, sellerId).ifPresent(jobRepository::delete);
   }

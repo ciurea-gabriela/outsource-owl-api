@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -88,5 +90,14 @@ public class JobController {
   @GetMapping("/jobs/{id}")
   public JobDTO getJob(@PathVariable("id") Long jobId) {
     return jobService.getJob(jobId);
+  }
+
+  @RequestMapping(value = "/jobs", method = RequestMethod.HEAD)
+  public ResponseEntity getJobsLength() {
+    long length = jobService.getJobsLength();
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(length));
+
+    return new ResponseEntity(headers, HttpStatus.NO_CONTENT);
   }
 }
