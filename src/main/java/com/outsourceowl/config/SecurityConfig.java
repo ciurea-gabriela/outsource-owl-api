@@ -18,17 +18,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.awt.geom.GeneralPath;
-
-import static org.springframework.http.HttpMethod.*;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-  private CustomUserDetailsService customUserDetailsService;
-  private JwtAuthenticationEntryPoint unauthorizedHandler;
-  private JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final CustomUserDetailsService customUserDetailsService;
+  private final JwtAuthenticationEntryPoint unauthorizedHandler;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
   @Autowired
   public SecurityConfig(

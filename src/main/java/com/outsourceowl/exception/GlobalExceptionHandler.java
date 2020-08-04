@@ -57,7 +57,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             "Unauthorized event",
             HttpStatus.UNAUTHORIZED.value(),
             request.getContextPath(),
-            "Unauthorized event");
+            ex.getMessage());
 
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
   }
