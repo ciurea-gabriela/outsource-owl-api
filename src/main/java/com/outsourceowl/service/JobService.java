@@ -56,15 +56,14 @@ public class JobService {
             .findById(sellerId)
             .orElseThrow(
                 () -> new ResourceNotFoundException("User not found with id: " + sellerId));
-
-    UUID uuid = UUID.randomUUID();
-    String generatedFileName = uuid.toString() + Objects.hashCode(userAccount.getUsername());
-    String fileName = fileStorageService.storeFile(file, generatedFileName);
-
     Category category =
         categoryRepository
             .findById(jobCreateDTO.getCategoryId())
             .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+    UUID uuid = UUID.randomUUID();
+    String generatedFileName = uuid.toString() + Objects.hashCode(userAccount.getUsername());
+    String fileName = fileStorageService.storeFile(file, generatedFileName);
 
     Job job = modelMapper.map(jobCreateDTO, Job.class);
     job.setPreviewImage(fileName);
@@ -139,8 +138,7 @@ public class JobService {
 
   public JobsSizeDTO getJobsSize(Long categoryId) {
     if (categoryId != null) {
-      List<Job> jobs
-              = jobRepository.findAllByCategoryId(categoryId);
+      List<Job> jobs = jobRepository.findAllByCategoryId(categoryId);
       return new JobsSizeDTO((long) jobs.size());
     }
 
