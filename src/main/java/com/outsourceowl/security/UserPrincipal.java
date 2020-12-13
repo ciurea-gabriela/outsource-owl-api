@@ -13,11 +13,11 @@ import java.util.List;
 @Getter
 @EqualsAndHashCode
 public class UserPrincipal implements UserDetails {
-  private Long id;
-  private String username;
-  private String email;
-  private String password;
-  private Collection<? extends GrantedAuthority> authorities;
+  private final Long id;
+  private final String username;
+  private final String email;
+  private final String password;
+  private final Collection<? extends GrantedAuthority> authorities;
 
   private UserPrincipal(
       Long id,

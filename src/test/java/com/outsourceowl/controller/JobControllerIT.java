@@ -12,8 +12,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -27,9 +34,11 @@ public class JobControllerIT extends ControllerBaseIT {
   private static final String JOB_NAME = "Job Name";
   private static final Double JOB_PRICE = 10.54D;
   private static final Integer JOB_DAYS_UNTIL_DELIVERY = 10;
+  private static final String JOB_DESCRIPTION = "Test description";
   private static final Long INVALID_USER_ID = 99999L;
   private static final Long INVALID_CATEGORY_ID = 99999L;
   private static final Long INVALID_JOB_ID = 99999L;
+  private static final String TEST_IMAGE_PATH = "static/files/user-images/test_job_file_image.PNG";
 
   @Before
   public void before() {
@@ -44,18 +53,8 @@ public class JobControllerIT extends ControllerBaseIT {
   }
 
   @Test
-  public void testCreateValidJob() {
-    JobCreateDTO jobCreateDTO =
-        JobCreateDTO.builder()
-            .name(JOB_NAME)
-            .price(JOB_PRICE)
-            .daysUntilDelivery(JOB_DAYS_UNTIL_DELIVERY)
-            .description("")
-            .categoryId(category.getId())
-            .build();
-
-    HttpEntity<JobCreateDTO> request =
-        new HttpEntity<>(jobCreateDTO, getSellerAuthorizationHeaders());
+  public void testCreateValidJob() throws IOException {
+    HttpEntity<MultiValueMap<String, Object>> request = createJobRequestWithImage();
     ResponseEntity<String> response =
         restTemplate.postForEntity(createJobsUri(getSeller().getId()), request, String.class);
 
@@ -63,21 +62,13 @@ public class JobControllerIT extends ControllerBaseIT {
 
     assertEquals(HttpStatus.CREATED.value(), response.getStatusCodeValue());
     assertEquals(JOB_NAME, jobs.get(0).getName());
+
+    deleteImage(jobs);
   }
 
   @Test
   public void testCreateJobUnauthorized() {
-    JobCreateDTO jobCreateDTO =
-        JobCreateDTO.builder()
-            .name(JOB_NAME)
-            .price(JOB_PRICE)
-            .daysUntilDelivery(JOB_DAYS_UNTIL_DELIVERY)
-            .description("")
-            .categoryId(category.getId())
-            .build();
-
-    HttpEntity<JobCreateDTO> request =
-        new HttpEntity<>(jobCreateDTO, getSellerAuthorizationHeaders());
+    HttpEntity<MultiValueMap<String, Object>> request = createJobRequestWithImage();
     ResponseEntity<String> response =
         restTemplate.postForEntity(createJobsUri(INVALID_USER_ID), request, String.class);
 
@@ -108,12 +99,11 @@ public class JobControllerIT extends ControllerBaseIT {
             .name(JOB_NAME)
             .price(JOB_PRICE)
             .daysUntilDelivery(JOB_DAYS_UNTIL_DELIVERY)
-            .description("")
+            .description(JOB_DESCRIPTION)
             .categoryId(INVALID_CATEGORY_ID)
             .build();
 
-    HttpEntity<JobCreateDTO> request =
-        new HttpEntity<>(jobCreateDTO, getSellerAuthorizationHeaders());
+    HttpEntity<MultiValueMap<String, Object>> request = createJobRequestWithImage(jobCreateDTO);
     ResponseEntity<String> response =
         restTemplate.postForEntity(createJobsUri(getSeller().getId()), request, String.class);
 
@@ -122,21 +112,11 @@ public class JobControllerIT extends ControllerBaseIT {
 
   @Test
   public void testCreateJobWithForbiddenRoleType() {
-    JobCreateDTO jobCreateDTO =
-        JobCreateDTO.builder()
-            .name(JOB_NAME)
-            .price(JOB_PRICE)
-            .daysUntilDelivery(JOB_DAYS_UNTIL_DELIVERY)
-            .description("")
-            .categoryId(category.getId())
-            .build();
-
-    HttpEntity<JobCreateDTO> request =
-        new HttpEntity<>(jobCreateDTO, getBuyerAuthorizationHeaders());
+    HttpEntity<MultiValueMap<String, Object>> request = createJobRequestWithImage();
     ResponseEntity<String> response =
         restTemplate.postForEntity(createJobsUri(getBuyer().getId()), request, String.class);
 
-    assertEquals(HttpStatus.FORBIDDEN.value(), response.getStatusCodeValue());
+    assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatusCodeValue());
   }
 
   @Test
@@ -210,7 +190,7 @@ public class JobControllerIT extends ControllerBaseIT {
             .name(UPDATED_JOB_NAME)
             .price(UPDATED_JOB_PRICE)
             .daysUntilDelivery(UPDATED_JOB_DAYS_UNTIL_DELIVERY)
-            .description("")
+            .description(JOB_DESCRIPTION)
             .categoryId(INVALID_CATEGORY_ID)
             .build();
 
@@ -287,8 +267,7 @@ public class JobControllerIT extends ControllerBaseIT {
 
     HttpEntity<HttpHeaders> request = new HttpEntity<>(getSellerAuthorizationHeaders());
     ResponseEntity<JobDTO> response =
-        restTemplate.exchange(
-            createJobsUri(getSeller().getId(), job.getId()), HttpMethod.GET, request, JobDTO.class);
+        restTemplate.exchange(createJobUri(job.getId()), HttpMethod.GET, request, JobDTO.class);
 
     assertEquals(HttpStatus.OK.value(), response.getStatusCodeValue());
     assertEquals(JOB_NAME, response.getBody().getName());
@@ -302,37 +281,9 @@ public class JobControllerIT extends ControllerBaseIT {
 
     HttpEntity<HttpHeaders> request = new HttpEntity<>(getSellerAuthorizationHeaders());
     ResponseEntity<JobDTO> response =
-        restTemplate.exchange(
-            createJobsUri(getSeller().getId(), INVALID_JOB_ID),
-            HttpMethod.GET,
-            request,
-            JobDTO.class);
+        restTemplate.exchange(createJobUri(INVALID_JOB_ID), HttpMethod.GET, request, JobDTO.class);
 
     assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatusCodeValue());
-  }
-
-  @Test
-  public void testGetJobSellerNotFound() {
-    Job job = createJob();
-
-    HttpEntity<HttpHeaders> request = new HttpEntity<>(getSellerAuthorizationHeaders());
-    ResponseEntity<JobDTO> response =
-        restTemplate.exchange(
-            createJobsUri(INVALID_USER_ID, job.getId()), HttpMethod.GET, request, JobDTO.class);
-
-    assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatusCodeValue());
-  }
-
-  @Test
-  public void testGetJobForbidden() {
-    Job job = createJob();
-
-    HttpEntity<HttpHeaders> request = new HttpEntity<>(getBuyerAuthorizationHeaders());
-    ResponseEntity<JobDTO> response =
-        restTemplate.exchange(
-            createJobsUri(getBuyer().getId(), job.getId()), HttpMethod.GET, request, JobDTO.class);
-
-    assertEquals(HttpStatus.FORBIDDEN.value(), response.getStatusCodeValue());
   }
 
   @Test
@@ -439,7 +390,7 @@ public class JobControllerIT extends ControllerBaseIT {
             createJobsUri(getSeller().getId()),
             HttpMethod.GET,
             request,
-            new ParameterizedTypeReference<List<JobDTO>>() {});
+            new ParameterizedTypeReference<>() {});
 
     assertEquals(HttpStatus.OK.value(), response.getStatusCodeValue());
     assertEquals(NUMBER_OF_STORIES, response.getBody().size());
@@ -453,7 +404,7 @@ public class JobControllerIT extends ControllerBaseIT {
             createJobsUri(getSeller().getId()),
             HttpMethod.GET,
             request,
-            new ParameterizedTypeReference<List<JobDTO>>() {});
+            new ParameterizedTypeReference<>() {});
 
     assertEquals(HttpStatus.OK.value(), response.getStatusCodeValue());
     assertEquals(0, response.getBody().size());
@@ -487,6 +438,10 @@ public class JobControllerIT extends ControllerBaseIT {
     return createJobsUri(userId) + "/" + jobId;
   }
 
+  private String createJobUri(Long jobId) {
+    return "/jobs/" + jobId;
+  }
+
   private Category createCategory(String name) {
     if (categoryRepository.existsByName(name)) {
       return categoryRepository.findByName(name).orElse(null);
@@ -494,5 +449,35 @@ public class JobControllerIT extends ControllerBaseIT {
       Category category = Category.builder().name(name).build();
       return categoryRepository.save(category);
     }
+  }
+
+  private void deleteImage(List<Job> jobs) throws IOException {
+    String imageName = jobs.get(0).getPreviewImage();
+    Path imageToDelete = Paths.get("src/main/resources/static/files/user-images/" + imageName);
+    Files.delete(imageToDelete);
+  }
+
+  private HttpEntity<MultiValueMap<String, Object>> createJobRequestWithImage(
+      JobCreateDTO jobCreateDTO) {
+    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add("job", jobCreateDTO);
+    body.add("file", new ClassPathResource((TEST_IMAGE_PATH)));
+
+    HttpHeaders headers = getSellerAuthorizationHeaders();
+    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+    return new HttpEntity<>(body, headers);
+  }
+
+  private HttpEntity<MultiValueMap<String, Object>> createJobRequestWithImage() {
+    JobCreateDTO jobCreateDTO =
+        JobCreateDTO.builder()
+            .name(JOB_NAME)
+            .price(JOB_PRICE)
+            .daysUntilDelivery(JOB_DAYS_UNTIL_DELIVERY)
+            .description(JOB_DESCRIPTION)
+            .categoryId(category.getId())
+            .build();
+
+    return createJobRequestWithImage(jobCreateDTO);
   }
 }
